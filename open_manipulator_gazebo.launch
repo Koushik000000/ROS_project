@@ -1,0 +1,40 @@
+<launch>
+  <!-- Arguments for Robot Names -->
+  <arg name="robot_name" default="open_manipulator" />
+  <arg name="robot_name_2" default="slave_manipulator" />
+
+  <!-- Launch Gazebo Empty World -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+  </include>
+
+  <!-- Load Master Robot Description -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find open_manipulator_description)/urdf/open_manipulator.urdf.xacro robot_namespace:=$(arg robot_name)" />
+
+  <!-- Load Slave Robot Description -->
+  <param name="robot_description_slave" command="$(find xacro)/xacro $(find open_manipulator_description)/urdf/open_manipulator.urdf.xacro robot_namespace:=$(arg robot_name_2)" />
+
+  <!-- Spawn Master Robot in Gazebo -->
+  <node name="$(arg robot_name)_spawn" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model $(arg robot_name)" />
+
+  <!-- Spawn Slave Robot in Gazebo -->
+  <node name="$(arg robot_name_2)_spawn" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description_slave -model $(arg robot_name_2) -x 1.0" />
+
+  <!-- Master Robot State Publisher -->
+  <node name="robot_state_publisher_1" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <param name="robot_description" command="$(find xacro)/xacro $(find open_manipulator_description)/urdf/open_manipulator.urdf.xacro robot_namespace:=$(arg robot_name)" />
+  </node>
+
+  <!-- Master Joint State Publisher -->
+  <node name="joint_state_publisher_1" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+  <!-- Slave Robot State Publisher -->
+  <node name="robot_state_publisher_2" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+    <param name="robot_description" command="$(find xacro)/xacro $(find open_manipulator_description)/urdf/open_manipulator.urdf.xacro robot_namespace:=$(arg robot_name_2)" />
+  </node>
+
+  <!-- Slave Joint State Publisher -->
+  <node name="joint_state_publisher_2" pkg="joint_state_publisher" type="joint_state_publisher" />
+</launch>
